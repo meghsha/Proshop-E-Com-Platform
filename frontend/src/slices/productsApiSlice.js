@@ -5,11 +5,11 @@ export const productsApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getProducts: builder.query({
             query: () => PRODUCTS_URL,
-            keepUnusedDataFor: 5,
+            keepUnusedDataFor: 60*60*1000, // 1 hour
         }),
         getProductById: builder.query({
             query: (productId) => `${PRODUCTS_URL}/${productId}`,
-            keepUnusedDataFor: 5,
+            keepUnusedDataFor: 60*60*1000, // 1 hour
         }),
     }),
 });
