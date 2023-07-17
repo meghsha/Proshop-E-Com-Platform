@@ -1,6 +1,7 @@
 import express from "express";
 import products from "./data/products.js";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 dotenv.config();
 import connectDB from "./config/db.js";
 import productRoutes from "./routes/productRoute.js";
@@ -11,6 +12,9 @@ const port = process.env.PORT;
 const app = express();
 
 connectDB(); //Connecting to MongoDB
+
+// Cookie parser middleware
+app.use(cookieParser());
 
 // Body parser middleware
 app.use(express.json());
