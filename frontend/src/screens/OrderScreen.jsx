@@ -224,6 +224,7 @@ import {
   useGetOrderDetailsQuery,
   useGetPaypalClientIdQuery,
   usePayOrderMutation,
+  useUpdateOrderToDeliveredMutation,
 } from '../slices/ordersApiSlice';
 
 const OrderScreen = () => {
@@ -237,12 +238,8 @@ const OrderScreen = () => {
   } = useGetOrderDetailsQuery(orderId);
 
   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
-
-//   const [deliverOrder, { isLoading: loadingDeliver }] =
-//     useDeliverOrderMutation();
-
+  const [updateOrderToDelivered, {isLoading: loadingDeliver}] = useUpdateOrderToDeliveredMutation();
   const { userInfo } = useSelector((state) => state.auth);
-
   const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
 
   const {
@@ -308,10 +305,15 @@ const OrderScreen = () => {
       });
   }
 
-//   const deliverHandler = async () => {
-//     await deliverOrder(orderId);
-//     refetch();
-//   };
+    const deliverHandler = async () => {
+        try {
+            await updateOrderToDelivered(orderId);
+            refetch();
+            toast.success('Order is delivered');
+        } catch (err) {
+            toast.error(err?.data?.message || err.error);
+        }
+    }
 
   return isLoading ? (
     <Loader />
@@ -450,22 +452,19 @@ const OrderScreen = () => {
                 </ListGroup.Item>
               )}
 
-              {/* {loadingDeliver && <Loader />} */}
+                {loadingDeliver && <Loader />}
+                {userInfo && userInfo.isAdmin && order.isPaid && !order.isDelivered && (
+                    <ListGroup.Item>
+                        <Button
+                            type='button'
+                            className='btn btn-block'
+                            onClick={deliverHandler}
+                        >
+                            Mark As Delivered
+                        </Button>
+                    </ListGroup.Item>
+                )}
 
-              {/* {userInfo &&
-                userInfo.isAdmin &&
-                order.isPaid &&
-                !order.isDelivered && (
-                  <ListGroup.Item>
-                    <Button
-                      type='button'
-                      className='btn btn-block'
-                      onClick={deliverHandler}
-                    >
-                      Mark As Delivered
-                    </Button>
-                  </ListGroup.Item>
-                )} */}
             </ListGroup>
           </Card>
         </Col>
