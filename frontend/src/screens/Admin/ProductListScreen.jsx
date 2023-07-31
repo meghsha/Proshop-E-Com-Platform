@@ -4,10 +4,14 @@ import { Table, Button, Row, Col } from "react-bootstrap"
 import Loader from "../../components/Loader"
 import Message from "../../components/Message"
 import { FaTimes, FaEdit, FaTrash } from "react-icons/fa"
+import { useCreateProductMutation } from "../../slices/productsApiSlice"
+import { toast } from "react-toastify";
 
 const ProductListScreen = () => {
 
-    const { data: products, isLoading, error } = useGetProductsQuery();
+    const { data: products, isLoading, error, refetch } = useGetProductsQuery();
+
+    const [createProduct, { isLoading: createProductLoading, error: createProductError }] = useCreateProductMutation();
 
     const hanldeDelete = (id) => {
         if (window.confirm('Are you sure?')) {
@@ -15,6 +19,19 @@ const ProductListScreen = () => {
             console.log("Deleted the product", id);
         }
     }
+
+    const createProductHandler = async () => {
+        if(window.confirm('Are you sure you want to create a new product?')) {
+            try {
+                const response = await createProduct({}).unwrap();
+                console.log(response);
+                refetch();
+            } catch (error) {
+                toast.error(error?.data?.message || error?.message);
+            }
+        }
+    }
+
   return (
     <>
         <Row className='align-items-center'>
@@ -22,14 +39,13 @@ const ProductListScreen = () => {
                 <h1>Products</h1>
             </Col>
             <Col className='text-end'>
-                <LinkContainer to='/admin/product/create'>
-                    <Button className='btn-sm m-3'>
+                    <Button className='btn-sm m-3' onClick={createProductHandler}>
                         <FaEdit /> Create Product
                     </Button>
-                </LinkContainer>
             </Col>
         </Row>
 
+        {createProductLoading && <Loader />}
         {isLoading ? <Loader /> : error ? <Message variant='danger'>{error}</Message> : (
             <Table striped hover responsive className='table-sm'>
                 <thead>
@@ -52,7 +68,7 @@ const ProductListScreen = () => {
                                 <td>{product.category}</td>
                                 <td>{product.brand}</td>
                                 <td>
-                                    <LinkContainer to={`/admin/product/${product._id}`}>
+                                    <LinkContainer to={`/admin/product/${product._id}/edit`}>
                                         <Button variant='light' className='btn-sm mx-2'>
                                             <FaEdit />
                                         </Button>
