@@ -4,7 +4,7 @@ import { Table, Button, Row, Col } from "react-bootstrap"
 import Loader from "../../components/Loader"
 import Message from "../../components/Message"
 import { FaTimes, FaEdit, FaTrash } from "react-icons/fa"
-import { useCreateProductMutation } from "../../slices/productsApiSlice"
+import { useCreateProductMutation, useDeleteProductMutation } from "../../slices/productsApiSlice"
 import { toast } from "react-toastify";
 
 const ProductListScreen = () => {
@@ -12,11 +12,17 @@ const ProductListScreen = () => {
     const { data: products, isLoading, error, refetch } = useGetProductsQuery();
 
     const [createProduct, { isLoading: createProductLoading, error: createProductError }] = useCreateProductMutation();
+    const [deleteProduct, { isLoading: deleteProductLoading, error: deleteProductError }] = useDeleteProductMutation();
 
-    const hanldeDelete = (id) => {
+    const hanldeDelete = async (id) => {
         if (window.confirm('Are you sure?')) {
-            // dispatch(deleteProduct(id))
-            console.log("Deleted the product", id);
+            try {
+                await deleteProduct(id)
+                toast.success('Product deleted successfully');
+                refetch();
+            } catch (error) {
+                toast.error(error?.data?.message || error?.message);
+            }
         }
     }
 
@@ -46,6 +52,7 @@ const ProductListScreen = () => {
         </Row>
 
         {createProductLoading && <Loader />}
+        {deleteProductLoading && <Loader />}
         {isLoading ? <Loader /> : error ? <Message variant='danger'>{error}</Message> : (
             <Table striped hover responsive className='table-sm'>
                 <thead>
